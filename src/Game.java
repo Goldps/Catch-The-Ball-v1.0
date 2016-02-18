@@ -23,8 +23,8 @@ import javax.swing.KeyStroke;
 @SuppressWarnings("serial")
 public class Game extends JFrame implements ActionListener, MouseListener {
 	//Window, JFrame and JPanel stuff
-	private int windowWidth = 800;
-	private int windowHeight = 700;
+	private int windowWidth = 700;
+	private int windowHeight = 600;
 	private GamePanel jpGame = new GamePanel();
 	private JPanel jpMenu = new JPanel();
 	private JPanel jpPause = new JPanel();
