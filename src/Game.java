@@ -1,7 +1,5 @@
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -9,27 +7,24 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
-
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 /*
  * to do:
- * fix score when clicks successfully or not and creates a ball
  * come up with a way to select next color for when making a ball instead of picking a random color
+ * come up with game modes
+ * come up with game difficulty
  */
 @SuppressWarnings("serial")
 public class Game extends JFrame implements ActionListener, MouseListener {
@@ -44,18 +39,23 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 	private JButton jpScoresExitButton = new JButton("Back to Menu");
 	private JButton jpPauseMenuButton = new JButton("Save / Back to Menu");
 	private JButton jpPauseGameButton = new JButton("Back to Game");
+
 	private GamePanel jpGame = new GamePanel();
 	private MenuPanel jpMenu = new MenuPanel();
 	private ScoresPanel jpScores = new ScoresPanel();	
 	private PausePanel jpPause = new PausePanel();
 	private Image imgMenuScreen = null;
 	
+	//Save stuff
+	private Object currentSave = null;
+	private int numberOfSaves = 0;
+	
 	//Game stuff
+	private int gameMode = 0;
 	private boolean running = false;
 	private boolean paused = false;
 	private int fps = 60;
 	private int frameCount = 0;
-	private int frameCountRandomize = 0;
 	private int score = 0;
 	private int round = -1;
 	private int intSec = 0;
@@ -67,7 +67,7 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 	private String strTime = "00:00:00";
 	private ArrayList<Ball> arrBall = new ArrayList<>();
 	private Random rnd = new Random();
-	
+
 	public Game() {
 		//Code to set up the jframe for window
 		super("Catch The Ball!");
@@ -162,11 +162,19 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+		boolean DidHitABall = false;
 		for(int i = 0; i <= arrBall.size() - 1; i++) {
 			if(arrBall.get(i).DidGetClicked(e.getX(), e.getY())) {
-				arrBall.remove(i);
-			} else {
+				if(!arrBall.get(i).isDead) {
+					DidHitABall = true;
+					score += 25;
+					arrBall.get(i).drawX -= arrBall.get(i).radius / 2;
+					arrBall.get(i).isDead = true;
+				}
 			}
+		}
+		if(DidHitABall == false) {
+			score -= 50;
 		}
 	}
 	
@@ -276,18 +284,28 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 			   round++;
 			   newRound();
 		   }
-
-		   if(round != 0) {
-
-			   double d = Math.random();
-
-			   if (d > 0.98){
-				   arrBall.get(rnd.nextInt(arrBall.size())).Randomize();
+		   
+		   for(int i = 0; i <= arrBall.size() - 1; i++) {
+			   if(arrBall.get(i).isDead) {
+				   if(arrBall.get(i).secsDead == 60) {
+					   arrBall.remove(i);
+				   } else {
+					   arrBall.get(i).secsDead++;
+				   }
 			   }
+		   }
+		   
+		   if(round != 0) {
 			   
 			   for(int i = 0; i <= arrBall.size() - 1; i++) {
 				   arrBall.get(i).CheckIfHitWall(windowWidth, windowHeight);
-				   arrBall.get(i).Move();
+				   if(!arrBall.get(i).isDead){
+					   double d = Math.random();
+					   if (d > 0.9769){
+						   arrBall.get(i).Randomize();
+					   }
+					   arrBall.get(i).Move();
+				   }
 			   }	
 		   }
 	   }
@@ -308,7 +326,6 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		   g.drawString("Time: " + strTime, 220, 10);
          
 		   frameCount++;
-		   frameCountRandomize++;
 	   }
 	}
 	

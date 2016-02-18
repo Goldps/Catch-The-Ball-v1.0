@@ -12,6 +12,8 @@ public class Ball {
 	public int speed = 0;
 	public String dir = "";
 	public Object color = null;
+	public int secsDead = 0;
+	public boolean isDead = false;
 	
 	public Random rnd = new Random();
 	
@@ -135,14 +137,54 @@ public class Ball {
 	}
 	
 	public void Draw(Graphics g) { 
-		g.setColor((Color) color);
-		g.fillOval(drawX, drawY, radius * 2, radius * 2);
+		Color newColor = (Color) color;
+		if(isDead) {
+			g.setColor(brighter(newColor, secsDead));
+			g.fillOval(drawX, drawY, radius * 3, radius * 2);
+		} else {
+			g.setColor((Color) color);
+			g.fillOval(drawX, drawY, radius * 2, radius * 2);
+		}
 	} 
+	
+	public Color brighter(Color color, int sec) {
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
+        int alpha = color.getAlpha();
+        double redFactor = 4;
+        double greenFactor = 4;
+        double blueFactor = 4;
+        
+        if(color.getRed() >= 128) {
+        	redFactor = 1.2;
+        }
+        if(color.getGreen() >= 128) {
+        	greenFactor = 1.2;
+        }
+        if(color.getBlue() >= 128) {
+        	blueFactor = 1.2;
+        }
+        
+        if(sec != 0) {
+        	return new Color (Math.min((int)(r + sec * redFactor), 255),
+                    Math.min((int)(g + sec * greenFactor), 255),
+                    Math.min((int)(b + sec * blueFactor), 255),
+                    alpha);
+        } else {
+        	return new Color(r, g, b, alpha);
+        }
+    }
 	
 	public void DrawDarker(Graphics g) {
 		Color newColor = (Color) color;
-		g.setColor(newColor.darker());
-		g.fillOval(drawX, drawY, radius * 2, radius * 2);
+		if(isDead) {
+			g.setColor(newColor.darker());
+			g.fillRect(drawX, drawY, radius * 2, radius * 2);
+		} else {
+			g.setColor(newColor.darker());
+			g.fillOval(drawX, drawY, radius * 2, radius * 2);
+		}
 	}
 	public void Randomize() {
 		//Random size
