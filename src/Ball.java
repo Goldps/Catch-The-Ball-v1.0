@@ -26,17 +26,21 @@ public class Ball {
 		
 		//Random speed
 		switch(rnd.nextInt(3)) {
-			case 0: speed = 3; break;
-			case 1: speed = 5; break;
+			case 0: speed = 5; break;
+			case 1: speed = 6; break;
 			case 2: speed = 7; break;
 		}
 		
 		//Random dir
-		switch(rnd.nextInt(4)) {
+		switch(rnd.nextInt(8)) {
 			case 0: dir = "up"; break;
 			case 1: dir = "down"; break;	
 			case 2: dir = "left"; break;
 			case 3: dir = "right"; break;
+			case 4: dir = "upleft"; break;
+			case 5: dir = "upright"; break;
+			case 6: dir = "downleft"; break;
+			case 7: dir = "downright"; break;
 		}
 		
 		//Random color
@@ -77,10 +81,42 @@ public class Ball {
 		int Ymin = centerY - radius;
 		
 		switch(dir) {
-			case "up": if(Ymax <= 0) { centerX = centerX; centerY = windowHeight + radius; drawX = drawX; drawY = windowHeight; answer = !answer;} break;
-			case "down": if(Ymin >= windowHeight) { centerX = centerX; centerY = 0 - radius; drawX = drawX; drawY = 0 - radius * 2; answer = !answer;} break;
-			case "left": if(Xmax <= 0) { centerX = windowWidth + radius; centerY = centerY; drawX = windowWidth; drawY = drawY; answer = !answer;} break;
-			case "right": if(Xmin >= windowWidth) { centerX = 0 - radius; centerY = centerY; drawX = 0 - radius * 2; drawY = drawY; answer = !answer;} break;
+			case "up": if(Ymax <= 0) { centerY = windowHeight + radius; drawY = windowHeight; answer = !answer;} break;
+			case "down": if(Ymin >= windowHeight) { centerY = 0 - radius; drawY = 0 - radius * 2; answer = !answer;} break;
+			case "left": if(Xmax <= 0) { centerX = windowWidth + radius; drawX = windowWidth; answer = !answer;} break;
+			case "right": if(Xmin >= windowWidth) { centerX = 0 - radius; drawX = 0 - radius * 2; answer = !answer;} break;
+			case "upleft": {
+				if(Ymax <= 0) { 
+					centerY = windowHeight + radius; drawY = windowHeight; answer = !answer;
+				} else if(Xmax <= 0) { 
+					centerX = windowWidth + radius; drawX = windowWidth; answer = !answer;
+				}
+				break;
+			}
+			case "upright": {
+				if(Ymax <= 0) { 
+					centerY = windowHeight + radius; drawY = windowHeight; answer = !answer;
+				} else if(Xmin >= windowWidth) { 
+					centerX = 0 - radius; drawX = 0 - radius * 2; answer = !answer;
+				}
+				break;
+			}
+			case "downleft": {
+				if(Ymin >= windowHeight) { 
+					centerY = 0 - radius; drawY = 0 - radius * 2; answer = !answer;
+				} else if(Xmax <= 0) { 
+					centerX = windowWidth + radius; drawX = windowWidth; answer = !answer;
+				}
+				break;
+			}
+			case "downright": {
+				if(Ymin >= windowHeight) { 
+					centerY = 0 - radius; drawY = 0 - radius * 2; answer = !answer;
+				} else if(Xmin >= windowWidth) { 
+					centerX = 0 - radius; drawX = 0 - radius * 2; answer = !answer;
+				} 
+				break;
+			}
 		}
 		return answer;
 	}
@@ -91,6 +127,10 @@ public class Ball {
 			case "down": centerY += speed; drawY += speed; break;
 			case "left": centerX -= speed; drawX -= speed; break;
 			case "right": centerX += speed; drawX += speed; break;
+			case "upleft": centerY -= speed; drawY -= speed; centerX -= speed; drawX -= speed; break;
+			case "upright": centerY -= speed; drawY -= speed; centerX += speed; drawX += speed; break;
+			case "downleft": centerY += speed; drawY += speed; centerX -= speed; drawX -= speed; break;
+			case "downright": centerY += speed; drawY += speed; centerX += speed; drawX += speed; break;
 		}
 	}
 	
@@ -110,28 +150,21 @@ public class Ball {
 				
 		//Random speed
 		switch(rnd.nextInt(3)) {
-			case 0: speed = 3; break;
-			case 1: speed = 5; break;
+			case 0: speed = 5; break;
+			case 1: speed = 6; break;
 			case 2: speed = 7; break;
 		}
 				
 		//Random dir
-		switch(rnd.nextInt(4)) {
+		switch(rnd.nextInt(8)) {
 			case 0: dir = "up"; break;
 			case 1: dir = "down"; break;	
 			case 2: dir = "left"; break;
 			case 3: dir = "right"; break;
-		}
-				
-		//Random color
-		switch(rnd.nextInt(7)) {
-			case 0: color = Color.BLACK; break;
-			case 1: color = Color.BLUE; break;
-			case 2: color = Color.RED; break;
-			case 3: color = Color.YELLOW; break;
-			case 4: color = Color.ORANGE; break;
-			case 5: color = Color.GREEN; break;
-			case 6: color = new Color(219, 0, 219); break;
+			case 4: dir = "upleft"; break;
+			case 5: dir = "upright"; break;
+			case 6: dir = "downleft"; break;
+			case 7: dir = "downright"; break;
 		}
 	}
 }

@@ -20,6 +20,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
+/*
+ * to do:
+ * fix score when clicks successfully or not and creates a ball
+ * come up with a way to select next color for when making a ball instead of picking a random color
+ */
 @SuppressWarnings("serial")
 public class Game extends JFrame implements ActionListener, MouseListener {
 	//Window, JFrame and JPanel stuff
@@ -43,6 +48,7 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 	private boolean paused = false;
 	private int fps = 60;
 	private int frameCount = 0;
+	private int frameCountRandomize = 0;
 	private int score = 0;
 	private int round = -1;
 	private int intSec = 0;
@@ -69,8 +75,8 @@ public class Game extends JFrame implements ActionListener, MouseListener {
         jpGame.getActionMap().put("escape", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                paused = !paused;
                 cl.show(cards, "Pause");
+                running = false;
             }
         });
         
@@ -118,9 +124,9 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		Object s = e.getSource();
 
 		if(s == jpMenuStartButton) {
-			running = !running;
-			runGameLoop();
 			cl.show(cards, "Game");
+			running = true;
+			runGameLoop();
 		} else if(s == jpMenuScoresButton) {
 			cl.show(cards, "Scores");
 		} else if(s == jpMenuQuitButton) {
@@ -128,11 +134,10 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		} else if(s == jpScoresExitButton) {
 			cl.show(cards, "Menu");
 		} else if(s == jpPauseExitButton){
-			paused = !paused;
 			cl.show(cards, "Game");
+			running = true;
+			runGameLoop();
 		} else if(s == jpPauseMenuButton) {
-			running = !running;
-			paused = !paused;
 			cl.show(cards, "Menu");
 		}
 		
@@ -140,19 +145,17 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		System.out.println("blah");
 		for(int i = 0; i <= arrBall.size() - 1; i++) {
 			if(arrBall.get(i).DidGetClicked(e.getX(), e.getY())) {
 				arrBall.remove(i);
 			} else {
-				
 			}
 		}
 	}
 	
 	public void newRound() {
 		if(round == 0) {
-			Ball ball = new Ball(rnd.nextInt(windowWidth - 20) + 10, rnd.nextInt(windowHeight - 20) + 10);
+			Ball ball = new Ball(windowWidth / 2, windowHeight / 2);
 			arrBall.add(ball);
 		} else {
 			for(int i = 0; i <= round * 3 - 1; i++) {
@@ -187,11 +190,20 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 			   round++;
 			   newRound();
 		   }
-		   
-		   for(int i = 0; i <= arrBall.size() - 1; i++) {
-			   arrBall.get(i).CheckIfHitWall(windowWidth, windowHeight);
-			   arrBall.get(i).Move();
-		   }		   
+
+		   if(round != 0) {
+
+			   double d = Math.random();
+
+			   if (d > 0.98){
+				   arrBall.get(rnd.nextInt(arrBall.size())).Randomize();
+			   }
+			   
+			   for(int i = 0; i <= arrBall.size() - 1; i++) {
+				   arrBall.get(i).CheckIfHitWall(windowWidth, windowHeight);
+				   arrBall.get(i).Move();
+			   }	
+		   }
 	   }
       
 	   public void paintComponent(Graphics g) {
@@ -210,6 +222,7 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		   g.drawString("Time: " + strTime, 220, 10);
          
 		   frameCount++;
+		   frameCountRandomize++;
 	   }
 	}
 	
