@@ -3,16 +3,22 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -30,19 +36,20 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 	//Window, JFrame and JPanel stuff
 	private int windowWidth = 700;
 	private int windowHeight = 600;
-	private GamePanel jpGame = new GamePanel();
-	private JPanel jpMenu = new JPanel();
-	private JPanel jpPause = new JPanel();
-	private JPanel jpScores = new JPanel();
 	private CardLayout cl = new CardLayout();
 	private JPanel cards = new JPanel(cl);
 	private JButton jpMenuStartButton = new JButton("Start");
 	private JButton jpMenuScoresButton = new JButton("Scores");
 	private JButton jpMenuQuitButton = new JButton("Quit");
-	private JButton jpScoresExitButton = new JButton("Back to menu");
-	private JButton jpPauseMenuButton = new JButton("Back to menu");
-	private JButton jpPauseExitButton = new JButton("Back to game");
-
+	private JButton jpScoresExitButton = new JButton("Back to Menu");
+	private JButton jpPauseMenuButton = new JButton("Save / Back to Menu");
+	private JButton jpPauseGameButton = new JButton("Back to Game");
+	private GamePanel jpGame = new GamePanel();
+	private MenuPanel jpMenu = new MenuPanel();
+	private ScoresPanel jpScores = new ScoresPanel();	
+	private PausePanel jpPause = new PausePanel();
+	private Image imgMenuScreen = null;
+	
 	//Game stuff
 	private boolean running = false;
 	private boolean paused = false;
@@ -62,14 +69,15 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 	private Random rnd = new Random();
 	
 	public Game() {
-		//Default code to set up the jframe for window
+		//Code to set up the jframe for window
 		super("Catch The Ball!");
 		setSize(windowWidth, windowHeight);
+		setResizable(false);
 		setFocusable(true);
 		requestFocus();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		//Sets up jpGame
+		//Setup jpGame
 		jpGame.addMouseListener(this);
 		jpGame.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
         jpGame.getActionMap().put("escape", new AbstractAction() {
@@ -80,25 +88,33 @@ public class Game extends JFrame implements ActionListener, MouseListener {
             }
         });
         
-		//Sets up jpPause
-		jpPauseExitButton.addActionListener(this);
+		//Setup jpPause
+        jpPauseGameButton.addActionListener(this);
 		jpPauseMenuButton.addActionListener(this);
-		jpPause.add(jpPauseMenuButton);
-		jpPause.add(jpPauseExitButton);
+
+		jpPauseMenuButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
+		jpPauseMenuButton.getActionMap().put("escape", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	cl.show(cards, "Game");
+    			running = true;
+    			runGameLoop();
+            }
+        });
 		
-		//Sets up jpScores
+		//Setup jpScores
 		jpScoresExitButton.addActionListener(this);
 		
-		jpScores.add(jpScoresExitButton);
-		
-		//Sets up jpMenu
+		//Setup jpMenu
 		jpMenuStartButton.addActionListener(this);
 		jpMenuScoresButton.addActionListener(this);
 		jpMenuQuitButton.addActionListener(this); 
-		
-		jpMenu.add(jpMenuStartButton);
-		jpMenu.add(jpMenuScoresButton);
-		jpMenu.add(jpMenuQuitButton);
+
+		try{
+			imgMenuScreen = ImageIO.read(new File("MenuScreen.png"));
+		} catch(Exception e) {
+			
+		}
 	
 		//Adds all the panels to cardlayout
 		cards.add(jpMenu, "Menu");
@@ -111,6 +127,7 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		
 		//Shows menu to player at start
 		cl.show(cards, "Menu");
+		
 	}
 
 	public static void main(String[] args) {
@@ -133,7 +150,7 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 			System.exit(0);
 		} else if(s == jpScoresExitButton) {
 			cl.show(cards, "Menu");
-		} else if(s == jpPauseExitButton){
+		} else if(s == jpPauseGameButton){
 			cl.show(cards, "Game");
 			running = true;
 			runGameLoop();
@@ -142,7 +159,7 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		}
 		
 	}
-	
+
 	@Override
 	public void mousePressed(MouseEvent e) {
 		for(int i = 0; i <= arrBall.size() - 1; i++) {
@@ -169,22 +186,91 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		jpGame.update();
 	}
    
-	private void drawGame(float interpolation) {
-		jpGame.setInterpolation(interpolation);
+	private void drawGame() {
       	jpGame.repaint();
 	}
-   
+	
+	private class PausePanel extends JPanel {
+		public PausePanel() { 
+			
+            setLayout(new GridBagLayout());
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+
+            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.gridy++;
+    		add(jpPauseGameButton, gbc);
+            gbc.gridy++;
+    		add(jpPauseMenuButton, gbc);
+    		
+        }
+		
+		public void paintComponent(Graphics g) {
+			
+			g.setColor(Color.WHITE.darker());
+			g.fillRect(0, 0, windowWidth, windowHeight);
+			
+			//Draws each ball on screen with ball color
+			for(int i = 0; i <= arrBall.size() - 1; i++) {
+				arrBall.get(i).DrawDarker(g);
+			} 
+			
+			g.setColor(Color.BLACK);
+			g.drawString("FPS: " + fps, 5, 10);
+			g.drawString("Score: " + score, 60, 10);
+			g.drawString("Round: " + round, 140, 10);
+			g.drawString("Time: " + strTime, 220, 10);
+		}
+	}
+	
+	private class ScoresPanel extends JPanel {
+		public ScoresPanel() { 
+			
+            setLayout(new GridBagLayout());
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+
+            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.gridy++;
+            add(jpScoresExitButton, gbc);
+
+        }
+		
+		public void paintComponent(Graphics g) {
+			
+			g.setColor(Color.WHITE);
+			g.fillRect(0, 0, windowWidth, windowHeight);
+			 
+		}
+	}
+	
+	private class MenuPanel extends JPanel {
+		public MenuPanel() { 
+			
+            setLayout(new GridBagLayout());
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+
+            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.gridy++;
+            add(jpMenuStartButton, gbc);
+            gbc.gridy++;
+            add(jpMenuScoresButton, gbc);
+            gbc.gridy++;
+            add(jpMenuQuitButton, gbc);
+        }
+		 public void paintComponent(Graphics g) {
+			   g.drawImage(imgMenuScreen, 0, 0, windowWidth, windowHeight, null);
+		 }
+	}
+	
 	private class GamePanel extends JPanel {
-	   float interpolation;
-      
-	   public GamePanel() {
-
-	   }
-
-	   public void setInterpolation(float interp) {
-		   interpolation = interp;
-	   }
-      
 	   public void update() {
 		   if(arrBall.size() == 0) {
 			   round++;
@@ -214,7 +300,7 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 		   for(int i = 0; i <= arrBall.size() - 1; i++) {
 			   arrBall.get(i).Draw(g);
 		   }
-		   	
+		   
 		   g.setColor(Color.BLACK);
 		   g.drawString("FPS: " + fps, 5, 10);
 		   g.drawString("Score: " + score, 60, 10);
@@ -275,9 +361,8 @@ public class Game extends JFrame implements ActionListener, MouseListener {
 					lastUpdateTime = now - TIME_BETWEEN_UPDATES;
 				}
 	         
-				//Render. To do so, we need to calculate interpolation for a smooth render.
-				float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / TIME_BETWEEN_UPDATES) );
-				drawGame(interpolation);
+				//Render.
+				drawGame();
 	           	lastRenderTime = now;
 	         
 	           	//Update the frames we got.

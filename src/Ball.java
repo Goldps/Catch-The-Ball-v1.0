@@ -139,6 +139,11 @@ public class Ball {
 		g.fillOval(drawX, drawY, radius * 2, radius * 2);
 	} 
 	
+	public void DrawDarker(Graphics g) {
+		Color newColor = (Color) color;
+		g.setColor(newColor.darker());
+		g.fillOval(drawX, drawY, radius * 2, radius * 2);
+	}
 	public void Randomize() {
 		//Random size
 		switch(rnd.nextInt(4)) {
