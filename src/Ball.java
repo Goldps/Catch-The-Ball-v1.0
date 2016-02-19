@@ -1,8 +1,11 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 import java.util.Random;
 
-public class Ball {
+@SuppressWarnings("serial")
+public class Ball implements Serializable{
+
 	public int drawX = 0;
 	public int drawY = 0;
 	public int centerX = 0;
