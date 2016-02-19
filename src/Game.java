@@ -78,7 +78,8 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 
 	//Game stuff
 	private int gameMode = 0;
-	private String difficulty = "Hard";
+	//difficulty 0=easy, 1=medium, 2=hard
+	private int difficulty = 0;
 	private boolean running = false;
 	private boolean paused = false;
 	private int fps = 60;
@@ -225,13 +226,13 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		} else if(s == jpPauseMenuButton) {
 			cl.show(cards, "Menu");
 		} else if(s == jpDifficultyEasyButton) {
-			difficulty = "Easy";
+			difficulty = 0;
 			cl.show(cards, "GameMode");
 		} else if(s == jpDifficultyMediumButton) {
-			difficulty = "Medium";
+			difficulty = 1;
 			cl.show(cards, "GameMode");
 		} else if(s == jpDifficultyHardButton) {
-			difficulty = "Hard";
+			difficulty = 2;
 			cl.show(cards, "GameMode");
 		}else if(s == jpGameModeThreeButton) {
 			cl.show(cards, "Game");
@@ -524,7 +525,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		   if(round >= gameMode + 1) {
 			   String name = JOptionPane.showInputDialog("Enter a name:");
 
-			   if(difficulty == "Easy") {
+			   if(difficulty == 0) {
 				   User user = new User();
 	               user.name = name;
 	               user.score = score;
@@ -539,7 +540,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	               }
 	               
 	               cardlayoutScoresPanel.show(cardsScoresPanel, "Easy");
-			   } else if (difficulty == "Medium") {
+			   } else if (difficulty == 1) {
 				   User user = new User();
 	               user.name = name;
 	               user.score = score;
@@ -554,7 +555,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	               }
 	               
 	               cardlayoutScoresPanel.show(cardsScoresPanel, "Medium");
-			   } else if (difficulty == "Hard") {
+			   } else if (difficulty == 2) {
 				   User user = new User();
 	               user.name = name;
 	               user.score = score;
@@ -616,21 +617,18 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 				   if(!arrBall.get(i).isDead){
 					   double d = Math.random();
 					   switch(difficulty) {
-					   		case "Easy": {
-					   			System.out.println("Easy" + difficulty);
-					   		}
-					   		case "Medium": {
-					   			System.out.println("Medium" + difficulty);
-					   			if (d > 0.9269){
+					   		case 0: {
+					   		} break;
+					   		case 1: {
+					   			if (d > 0.75){
 					   				arrBall.get(i).Randomize();
 					   			}
-					   		}
-					   		case "Hard": {
-					   			System.out.println("Hard" + difficulty);
-					   			if (d > 0.8925){
+					   		} break;
+					   		case 2: {
+					   			if (d > 0.50){
 					   				arrBall.get(i).Randomize();
 					   			}
-					   		}
+					   		} break;
 					   }
 					   arrBall.get(i).Move();
 				   }
