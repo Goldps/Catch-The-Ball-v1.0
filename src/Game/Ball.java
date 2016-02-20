@@ -1,3 +1,4 @@
+package Game;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.Serializable;
@@ -16,10 +17,10 @@ public class Ball implements Serializable{
 	public Object color = null;
 	public int secsDead = 0;
 	public boolean isDead = false;
-	public int tickSinceLastChange = 0;
+	public long lastChangeTime = System.currentTimeMillis();
 	public Random rnd = new Random();
 	
-	public Ball(int _mouseX, int _mouseY) {
+	public Ball(int _mouseX, int _mouseY, int diff) {
 		//Random size
 		switch(rnd.nextInt(4)) {
 			case 0: radius = 25; break;
@@ -28,11 +29,19 @@ public class Ball implements Serializable{
 			case 3: radius = 40; break;
 		}
 		
-		//Random speed
-		switch(rnd.nextInt(3)) {
-			case 0: speed = 5; break;
-			case 1: speed = 6; break;
-			case 2: speed = 7; break;
+		if(diff == 3 || diff == 4) {
+			//Random speed
+			switch(rnd.nextInt(3)) {
+				case 0: speed = 7; break;
+				case 1: speed = 10; break;
+				case 2: speed = 13; break;
+			}
+		} else {
+			switch(rnd.nextInt(3)) {
+				case 0: speed = 5; break;
+				case 1: speed = 6; break;
+				case 2: speed = 7; break;
+			}
 		}
 		
 		//Random dir
@@ -189,12 +198,11 @@ public class Ball implements Serializable{
 		}
 	}
 	
-	public void MediumAI() {
-		double d = Math.random();
-		
-		if((tickSinceLastChange * .000050) < d) {
-			if(d < 0.7) {
-				//70% to be here
+	public void MediumRandomize() {
+		if((System.currentTimeMillis() - lastChangeTime) > 200) {
+			double d = Math.random();
+
+			if(d > 0.95) {
 				switch(rnd.nextInt(8)) {
 					case 0: dir = "up"; break;
 					case 1: dir = "down"; break;	
@@ -205,22 +213,98 @@ public class Ball implements Serializable{
 					case 6: dir = "downleft"; break;
 					case 7: dir = "downright"; break;
 				}
-			}
-			else {
-				//30% to be here
 				switch(rnd.nextInt(3)) {
 					case 0: speed = 5; break;
 					case 1: speed = 6; break;
 					case 2: speed = 7; break;
 				}
 			}
-			tickSinceLastChange = 0;
+			lastChangeTime = System.currentTimeMillis();
 		}
-		
-		tickSinceLastChange++;
 	}
 	
-	public void HardAI() {	
-		
+	public void HardRandomize() {	
+		if((System.currentTimeMillis() - lastChangeTime) > 50) {
+			double d = Math.random();
+
+			if(d > 0.95) {
+				switch(rnd.nextInt(8)) {
+					case 0: dir = "up"; break;
+					case 1: dir = "down"; break;	
+					case 2: dir = "left"; break;
+					case 3: dir = "right"; break;
+					case 4: dir = "upleft"; break;
+					case 5: dir = "upright"; break;
+					case 6: dir = "downleft"; break;
+					case 7: dir = "downright"; break;
+				}
+				switch(rnd.nextInt(3)) {
+					case 0: speed = 7; break;
+					case 1: speed = 10; break;
+					case 2: speed = 13; break;
+				}
+			}
+			lastChangeTime = System.currentTimeMillis();
+		}
+	}
+	
+	public void ExtremeRandomize(int windowWidth, int windowHeight) {	
+		if((System.currentTimeMillis() - lastChangeTime) > 50) {
+			double d = Math.random();
+
+			if(d > 0.95) {
+				switch(rnd.nextInt(8)) {
+					case 0: dir = "up"; break;
+					case 1: dir = "down"; break;	
+					case 2: dir = "left"; break;
+					case 3: dir = "right"; break;
+					case 4: dir = "upleft"; break;
+					case 5: dir = "upright"; break;
+					case 6: dir = "downleft"; break;
+					case 7: dir = "downright"; break;
+				}
+				switch(rnd.nextInt(3)) {
+					case 0: speed = 7; break;
+					case 1: speed = 10; break;
+					case 2: speed = 13; break;
+				}
+			}
+			d = Math.random();
+			if(d > 0.995) {
+				d = Math.random();
+				if(d < .5) {
+					d = Math.random();
+					if(d < .5){
+						if(centerX > 75 || centerX < windowWidth - 75) {
+							int num = rnd.nextInt(80) + 30;
+							centerX -= num;
+							drawX = num - radius;
+						}
+					} else {
+						if(centerY > 75 || centerY < windowHeight - 75) {
+							int num = rnd.nextInt(80) + 30;
+							centerY -= num;
+							drawY = num - radius;
+						}
+					}
+				} else {
+					d = Math.random();
+					if(d < .5){
+						if(centerX > 75 || centerX < windowWidth - 75) {
+							int num = rnd.nextInt(80) + 30;
+							centerX += num;
+							drawX = num - radius;
+						}
+					} else {
+						if(centerY > 75 || centerY < windowHeight - 75) {
+							int num = rnd.nextInt(80) + 30;
+							centerY += num;
+							drawY = num - radius;
+						}
+					}
+				}
+			}
+			lastChangeTime = System.currentTimeMillis();
+		}
 	}
 }

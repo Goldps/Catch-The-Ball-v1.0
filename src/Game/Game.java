@@ -1,3 +1,4 @@
+package Game;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -20,6 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
+
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -30,19 +32,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
-/*
- * to do:
- * come up with a way to select next color for when making a ball instead of picking a random color
- * fix difficulty, will go through each difficulty
- * 
- */
-
 @SuppressWarnings("serial")
 public class Game extends JFrame implements ActionListener, MouseListener, Serializable {
 
 	//Window, JFrame and JPanel stuff
-	private int windowWidth = 700;
-	private int windowHeight = 600;
+	private int windowWidth = 800;
+	private int windowHeight = 700;
 	private CardLayout cl = new CardLayout();
 	private JPanel cards = new JPanel(cl);
 
@@ -50,9 +45,6 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	private JPanel cardsScoresPanel = new JPanel(cardlayoutScoresPanel);
 	
 	private JButton jpScoresNextButton = new JButton("Next");
-	private EasyPanel jpEasyHighscores = new EasyPanel();
-	private MediumPanel jpMediumHighscores = new MediumPanel();
-	private HardPanel jpHardHighscores = new HardPanel();
 	private String changejpHighscoreCards = "Easy";
 	private JButton jpMenuStartButton = new JButton("Start");
 	private JButton jpMenuScoresButton = new JButton("High Scores");
@@ -63,12 +55,12 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	private JButton jpDifficultyEasyButton = new JButton("Easy Mode");
 	private JButton jpDifficultyMediumButton = new JButton("Medium Mode");
 	private JButton jpDifficultyHardButton = new JButton("Hard Mode");
-	/*
-	private GameModePanel jpGameMode = new GameModePanel();
-	private JButton jpGameModeThreeButton = new JButton("3 rounds");
-	private JButton jpGameModeSixButton = new JButton("6 rounds");
-	private JButton jpGameModeTenButton = new JButton("10 rounds");
-	*/
+	private JButton jpDifficultyExtremeButton = new JButton("Extreme Mode");
+	private EasyPanel jpEasyHighscores = new EasyPanel();
+	private MediumPanel jpMediumHighscores = new MediumPanel();
+	private HardPanel jpHardHighscores = new HardPanel();
+	private ExtremePanel jpExtremeHighscores = new ExtremePanel();
+	
 	private GamePanel jpGame = new GamePanel();
 	private MenuPanel jpMenu = new MenuPanel();
 	private ScoresPanel jpScores = new ScoresPanel();	
@@ -78,11 +70,10 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 
 	//Game stuff
 	private int totalRounds = 3;
-	//difficulty 1=easy, 2=medium, 3=hard
+	//difficulty 1=easy, 2=medium, 3=hard, 4=extreme
 	private int difficulty = 1;
 	private boolean running = false;
 	private boolean paused = false;
-	private boolean canAITick = true;
 	private int fps = 60;
 	private int frameCount = 0;
 	private int score = 0;
@@ -98,6 +89,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	private ArrayList<User> arrEasyHighscores = new ArrayList<>();
 	private ArrayList<User> arrMediumHighscores = new ArrayList<>();
 	private ArrayList<User> arrHardHighscores = new ArrayList<>();
+	private ArrayList<User> arrExtremeHighscores = new ArrayList<>();
 	private Random rnd = new Random();
 	private File fileHighscore = new File("Highscores.lol");
 
@@ -110,16 +102,11 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		requestFocus();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		/*
-		//Setup jpGameMode
-		jpGameModeThreeButton.addActionListener(this);
-		jpGameModeSixButton.addActionListener(this);
-		jpGameModeTenButton.addActionListener(this);
-		*/ 
 		//Setup jpDifficulty
 		jpDifficultyEasyButton.addActionListener(this);
 		jpDifficultyMediumButton.addActionListener(this);
 		jpDifficultyHardButton.addActionListener(this);
+		jpDifficultyExtremeButton.addActionListener(this);
 		
 		//Setup jpGame
 		jpGame.addMouseListener(this);
@@ -160,15 +147,14 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		jpMenuScoresButton.addActionListener(this);
 		jpMenuQuitButton.addActionListener(this); 
 
-		try{
+		try {
 			imgMenuScreen = ImageIO.read(new File("MenuScreen.png"));
-		} catch(Exception e) {
+		}catch(Exception e) {
 			
 		}
-
+		
 		//Adds all the panels to cardlayout
 		cards.add(jpDifficulty, "Difficulty");
-		//cards.add(jpGameMode, "GameMode");
 		cards.add(jpMenu, "Menu");
 		cards.add(jpGame, "Game");
 		cards.add(jpScores, "Scores");
@@ -216,6 +202,9 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 				cardlayoutScoresPanel.show(cardsScoresPanel, "Hard");
 				changejpHighscoreCards = "Hard";
 			} else if(changejpHighscoreCards == "Hard"){
+				cardlayoutScoresPanel.show(cardsScoresPanel, "Extreme");
+				changejpHighscoreCards = "Extreme";
+			} else if(changejpHighscoreCards == "Extreme"){
 				cardlayoutScoresPanel.show(cardsScoresPanel, "Easy");
 				changejpHighscoreCards = "Easy";
 			}
@@ -226,22 +215,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			running = true;
 			runGameLoop();
 		} else if(s == jpPauseMenuButton) {
-			running = false;
-			paused = false;
-			running = false;
-			paused = false;
-			fps = 60;
-			frameCount = 0;
-			score = 0;
-			round = -1;
-			intSec = 0;
-			intMin = 0;
-			intHr = 0;
-			strSec = "";
-			strMin = "";
-			strHr = "";
-			strTime = "00:00:00";
-			arrBall.removeAll(arrBall);
+			resetGame();
 			cl.show(cards, "Menu");
 		} else if(s == jpDifficultyEasyButton) {
 			difficulty = 1;
@@ -258,24 +232,12 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			cl.show(cards, "Game");
 			running = true;
 			runGameLoop();
+		} else if(s == jpDifficultyExtremeButton) {
+			difficulty = 4;
+			cl.show(cards, "Game");
+			running = true;
+			runGameLoop();
 		}
-		/*else if(s == jpGameModeThreeButton) {
-			cl.show(cards, "Game");
-			gameMode = 3;
-			running = true;
-			runGameLoop();
-		} else if(s == jpGameModeSixButton) {
-			cl.show(cards, "Game");
-			gameMode = 6;
-			running = true;
-			runGameLoop();
-		} else if(s == jpGameModeTenButton) {
-			cl.show(cards, "Game");
-			gameMode = 10;
-			running = true;
-			runGameLoop();
-		} 
-		*/
 	}
 
 	@Override
@@ -305,6 +267,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		    out.writeObject(arrEasyHighscores);
 		    out.writeObject(arrMediumHighscores);
 		    out.writeObject(arrHardHighscores);
+		    out.writeObject(arrExtremeHighscores);
 		    out.close();
 		    fileOut.close();
 	    }catch(IOException i)
@@ -322,6 +285,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	    	 arrEasyHighscores = (ArrayList<User>)in.readObject();
 	    	 arrMediumHighscores = (ArrayList<User>)in.readObject();
 	       	 arrHardHighscores = (ArrayList<User>)in.readObject();
+	       	 arrExtremeHighscores = (ArrayList<User>)in.readObject();
 	       	 in.close();
 	       	 fileIn.close();
 	     }catch(IOException i)
@@ -336,13 +300,29 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	     }
 	}
 	
+	public void resetGame() {
+		running = false;
+		paused = false;
+		fps = 60;
+		frameCount = 0;
+		score = 0;
+		round = -1;
+		intSec = 0;
+		intMin = 0;
+		intHr = 0;
+		strSec = "";
+		strMin = "";
+		strHr = "";
+		strTime = "00:00:00";
+		arrBall.removeAll(arrBall);
+	}
 	public void newRound() {
 		if(round == 0) {
-			Ball ball = new Ball(windowWidth / 2, windowHeight / 2);
+			Ball ball = new Ball(windowWidth / 2, windowHeight / 2, difficulty);
 			arrBall.add(ball);
 		} else {
 			for(int i = 1; i <= (round * 2) * difficulty; i++) {
-				Ball ball = new Ball(rnd.nextInt(windowWidth - 20) + 10, rnd.nextInt(windowHeight - 20) + 10);
+				Ball ball = new Ball(rnd.nextInt(windowWidth - 20) + 10, rnd.nextInt(windowHeight - 20) + 10, difficulty);
 				arrBall.add(ball);
 			}
 		}
@@ -376,34 +356,6 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			return "Name: " + name + "        Score: " + score + "        Time: " + time;
 		}
 	}
-	
-	/*
-	private class GameModePanel extends JPanel implements Serializable {
-		public GameModePanel() { 
-			
-            setLayout(new GridBagLayout());
-
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-
-            gbc.fill = GridBagConstraints.VERTICAL;
-            gbc.gridy++;
-            add(jpGameModeThreeButton, gbc);
-            gbc.gridy++;
-            add(jpGameModeSixButton, gbc);
-            gbc.gridy++;
-            add(jpGameModeTenButton, gbc);
-        }
-		
-		public void paintComponent(Graphics g) {
-			
-			g.setColor(Color.WHITE);
-			g.fillRect(0, 0, windowWidth, windowHeight);
-			 
-		}
-	}
-	*/
 	
 	private class PausePanel extends JPanel implements Serializable {
 
@@ -463,6 +415,8 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
             add(jpDifficultyMediumButton, gbc);
             gbc.gridy++;
             add(jpDifficultyHardButton, gbc);
+            gbc.gridy++;
+            add(jpDifficultyExtremeButton, gbc);
         }
 		
 		public void paintComponent(Graphics g) {
@@ -510,6 +464,18 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		}
 	}
 	
+	private class ExtremePanel extends JPanel implements Serializable {
+		public void paintComponent(Graphics g) {
+			g.setColor(Color.WHITE);
+			g.fillRect(0, 0, windowWidth, windowHeight);
+			g.setColor(Color.BLACK);
+			g.drawString("Extreme Difficulty High Scores", windowWidth / 2 - 75, 50);
+			for(int i = 0; i <= arrExtremeHighscores.size() - 1; i++) {
+				g.drawString((i + 1) + ". " + arrExtremeHighscores.get(i).toString(), windowWidth / 2 - 125, 40 * i + 100);
+			}
+		}
+	}
+	
 	private class ScoresPanel extends JPanel implements Serializable {
 		public ScoresPanel() { 
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -518,6 +484,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
             cardsScoresPanel.add(jpEasyHighscores, "Easy");
             cardsScoresPanel.add(jpMediumHighscores, "Medium");
             cardsScoresPanel.add(jpHardHighscores, "Hard");
+            cardsScoresPanel.add(jpExtremeHighscores, "Extreme");
 
             cardsScoresPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             jpScoresNextButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -601,26 +568,26 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	               }
 	               
 	               cardlayoutScoresPanel.show(cardsScoresPanel, "Hard");
+			   } else if (difficulty == 4) {
+				   User user = new User();
+	               user.name = name;
+	               user.score = score;
+	               user.time = strTime;
+	               arrExtremeHighscores.add(user);
+	             
+	               arrExtremeHighscores.sort(null);
+	               
+	               if(arrExtremeHighscores.size() > 5) {
+	            	   arrExtremeHighscores.remove(5);
+	               }
+	               
+	               cardlayoutScoresPanel.show(cardsScoresPanel, "Extreme");
 			   }
 			   
 			   serializeHighscores();
-			    
-			   running = false;
-			   paused = false;
-			   running = false;
-			   paused = false;
-			   fps = 60;
-			   frameCount = 0;
-			   score = 0;
-			   round = -1;
-			   intSec = 0;
-			   intMin = 0;
-			   intHr = 0;
-			   strSec = "";
-			   strMin = "";
-			   strHr = "";
-			   strTime = "00:00:00";
-			   arrBall.removeAll(arrBall);
+			   
+			   resetGame();
+			   
 			   cl.show(cards, "Scores");
 		   } else {
 			   if(arrBall.size() == 0){
@@ -644,15 +611,11 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			   for(int i = 0; i <= arrBall.size() - 1; i++) {
 				   arrBall.get(i).CheckIfHitWall(windowWidth, windowHeight);
 				   if(!arrBall.get(i).isDead){
-					   if(canAITick) {
-						   switch(difficulty) {
-						   		case 1: {} break;
-					   			case 2: arrBall.get(i).MediumAI(); break;
-					   			case 3: arrBall.get(i).HardAI(); break;
-						   }
-						   if(i == arrBall.size() - 1) {
-							   canAITick = false;
-						   }
+					   switch(difficulty) {
+					   		case 1: {} break;
+					   		case 2: arrBall.get(i).MediumRandomize(); break;
+					   		case 3: arrBall.get(i).HardRandomize(); break;
+					   		case 4: arrBall.get(i).ExtremeRandomize(windowWidth, windowHeight); break;
 					   }
 					   arrBall.get(i).Move();
 				   }
@@ -742,7 +705,6 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	           	//Update the frames we got.
 	           	int thisSecond = (int) (lastUpdateTime / 1000000000);
 	           	if (thisSecond > lastSecondTime) {
-	           		canAITick = true;
 	           		intSec++;
 	           		if(intSec == 60) {intSec = 0; intMin++;}
 	           		if(intMin == 60) {intMin = 0; intHr++;}
