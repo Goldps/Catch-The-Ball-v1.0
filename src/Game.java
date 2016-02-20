@@ -1,7 +1,6 @@
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -64,24 +63,26 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	private JButton jpDifficultyEasyButton = new JButton("Easy Mode");
 	private JButton jpDifficultyMediumButton = new JButton("Medium Mode");
 	private JButton jpDifficultyHardButton = new JButton("Hard Mode");
+	/*
+	private GameModePanel jpGameMode = new GameModePanel();
 	private JButton jpGameModeThreeButton = new JButton("3 rounds");
 	private JButton jpGameModeSixButton = new JButton("6 rounds");
 	private JButton jpGameModeTenButton = new JButton("10 rounds");
-	
+	*/
 	private GamePanel jpGame = new GamePanel();
 	private MenuPanel jpMenu = new MenuPanel();
 	private ScoresPanel jpScores = new ScoresPanel();	
 	private PausePanel jpPause = new PausePanel();
 	private DifficultyPanel jpDifficulty = new DifficultyPanel();
-	private GameModePanel jpGameMode = new GameModePanel();
 	private transient Image imgMenuScreen = null;
 
 	//Game stuff
-	private int gameMode = 0;
-	//difficulty 0=easy, 1=medium, 2=hard
-	private int difficulty = 0;
+	private int totalRounds = 3;
+	//difficulty 1=easy, 2=medium, 3=hard
+	private int difficulty = 1;
 	private boolean running = false;
 	private boolean paused = false;
+	private boolean canAITick = true;
 	private int fps = 60;
 	private int frameCount = 0;
 	private int score = 0;
@@ -109,11 +110,12 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		requestFocus();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		/*
 		//Setup jpGameMode
 		jpGameModeThreeButton.addActionListener(this);
 		jpGameModeSixButton.addActionListener(this);
 		jpGameModeTenButton.addActionListener(this);
-		
+		*/ 
 		//Setup jpDifficulty
 		jpDifficultyEasyButton.addActionListener(this);
 		jpDifficultyMediumButton.addActionListener(this);
@@ -166,7 +168,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 
 		//Adds all the panels to cardlayout
 		cards.add(jpDifficulty, "Difficulty");
-		cards.add(jpGameMode, "GameMode");
+		//cards.add(jpGameMode, "GameMode");
 		cards.add(jpMenu, "Menu");
 		cards.add(jpGame, "Game");
 		cards.add(jpScores, "Scores");
@@ -224,17 +226,40 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			running = true;
 			runGameLoop();
 		} else if(s == jpPauseMenuButton) {
+			running = false;
+			paused = false;
+			running = false;
+			paused = false;
+			fps = 60;
+			frameCount = 0;
+			score = 0;
+			round = -1;
+			intSec = 0;
+			intMin = 0;
+			intHr = 0;
+			strSec = "";
+			strMin = "";
+			strHr = "";
+			strTime = "00:00:00";
+			arrBall.removeAll(arrBall);
 			cl.show(cards, "Menu");
 		} else if(s == jpDifficultyEasyButton) {
-			difficulty = 0;
-			cl.show(cards, "GameMode");
-		} else if(s == jpDifficultyMediumButton) {
 			difficulty = 1;
-			cl.show(cards, "GameMode");
-		} else if(s == jpDifficultyHardButton) {
+			cl.show(cards, "Game");
+			running = true;
+			runGameLoop();
+		} else if(s == jpDifficultyMediumButton) {
 			difficulty = 2;
-			cl.show(cards, "GameMode");
-		}else if(s == jpGameModeThreeButton) {
+			cl.show(cards, "Game");
+			running = true;
+			runGameLoop();
+		} else if(s == jpDifficultyHardButton) {
+			difficulty = 3;
+			cl.show(cards, "Game");
+			running = true;
+			runGameLoop();
+		}
+		/*else if(s == jpGameModeThreeButton) {
 			cl.show(cards, "Game");
 			gameMode = 3;
 			running = true;
@@ -250,7 +275,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			running = true;
 			runGameLoop();
 		} 
-
+		*/
 	}
 
 	@Override
@@ -288,6 +313,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	    }
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void deserializeHighscores() {
 	     try
 	     {
@@ -315,7 +341,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			Ball ball = new Ball(windowWidth / 2, windowHeight / 2);
 			arrBall.add(ball);
 		} else {
-			for(int i = 0; i <= round * 3 - 1; i++) {
+			for(int i = 1; i <= (round * 2) * difficulty; i++) {
 				Ball ball = new Ball(rnd.nextInt(windowWidth - 20) + 10, rnd.nextInt(windowHeight - 20) + 10);
 				arrBall.add(ball);
 			}
@@ -341,18 +367,17 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		public int compareTo(User compareUser) {
 			int compareScore = ((User) compareUser).score; 
 			
-			//ascending order
-			//return this.score - compareScore;
-			
+			//Highest score being first in arr" "Highscore
 			//descending order
 			return compareScore - this.score;
 		}
 		
 		public String toString() {
-			return "Name: " + name + " Score: " + score + " Game Mode: " + gameMode + " Time: " + time;
+			return "Name: " + name + "        Score: " + score + "        Time: " + time;
 		}
 	}
 	
+	/*
 	private class GameModePanel extends JPanel implements Serializable {
 		public GameModePanel() { 
 			
@@ -378,6 +403,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			 
 		}
 	}
+	*/
 	
 	private class PausePanel extends JPanel implements Serializable {
 
@@ -407,11 +433,16 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 				arrBall.get(i).DrawDarker(g);
 			} 
 			
+			String diff = "";
+		  	switch(difficulty) {
+			   	case 1: diff = "Easy"; break;
+			   	case 2: diff = "Medium"; break;
+			 	case 3: diff = "Hard"; break;
+			}
+			   
+			   
 			g.setColor(Color.BLACK);
-			g.drawString("FPS: " + fps, 5, 10);
-			g.drawString("Score: " + score, 60, 10);
-			g.drawString("Round: " + round, 140, 10);
-			g.drawString("Time: " + strTime, 220, 10);
+			g.drawString("FPS: " + fps + "        Score: " + score + "        Round: " + round + "        Time: " + strTime + "        Difficulty: " + diff, 5, 10);  
 		}
 	}
 	
@@ -449,7 +480,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			g.setColor(Color.BLACK);
 			g.drawString("Easy Difficulty High Scores", windowWidth / 2 - 75, 50);
 			for(int i = 0; i <= arrEasyHighscores.size() - 1; i++) {
-				g.drawString((i + 1) + ". " + arrEasyHighscores.get(i).toString(), windowWidth / 2 - 175, 40 * i + 100);
+				g.drawString((i + 1) + ". " + arrEasyHighscores.get(i).toString(), windowWidth / 2 - 125, 40 * i + 100);
 			}
 		}
 	}
@@ -461,7 +492,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			g.setColor(Color.BLACK);
 			g.drawString("Medium Difficulty High Scores", windowWidth / 2 - 75, 50);
 			for(int i = 0; i <= arrMediumHighscores.size() - 1; i++) {
-				g.drawString((i + 1) + ". " + arrMediumHighscores.get(i).toString(), windowWidth / 2 - 175, 40 * i + 100);
+				g.drawString((i + 1) + ". " + arrMediumHighscores.get(i).toString(), windowWidth / 2 - 125, 40 * i + 100);
 			}
 		}
 	}
@@ -473,14 +504,13 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			g.setColor(Color.BLACK);
 			g.drawString("Hard Difficulty High Scores", windowWidth / 2 - 75, 50);
 			for(int i = 0; i <= arrHardHighscores.size() - 1; i++) {
-				g.drawString((i + 1) + ". " + arrHardHighscores.get(i).toString(), windowWidth / 2 - 175, 40 * i + 100);
+				g.drawString((i + 1) + ". " + arrHardHighscores.get(i).toString(), windowWidth / 2 - 125, 40 * i + 100);
 			}
 		
 		}
 	}
 	
 	private class ScoresPanel extends JPanel implements Serializable {
-
 		public ScoresPanel() { 
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             setBackground(Color.WHITE);
@@ -488,10 +518,14 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
             cardsScoresPanel.add(jpEasyHighscores, "Easy");
             cardsScoresPanel.add(jpMediumHighscores, "Medium");
             cardsScoresPanel.add(jpHardHighscores, "Hard");
-    		
-            add(cardsScoresPanel, BorderLayout.CENTER);
-            add(jpScoresNextButton, BorderLayout.SOUTH);
-            add(jpScoresExitButton, BorderLayout.SOUTH);
+
+            cardsScoresPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            jpScoresNextButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            jpScoresExitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            
+            add(cardsScoresPanel);
+            add(jpScoresNextButton);
+            add(jpScoresExitButton);
         }
 	}
 	
@@ -522,14 +556,13 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 
 		public void update() {
 
-		   if(round >= gameMode + 1) {
+		   if(round >= totalRounds + 1) {
 			   String name = JOptionPane.showInputDialog("Enter a name:");
 
-			   if(difficulty == 0) {
+			   if(difficulty == 1) {
 				   User user = new User();
 	               user.name = name;
 	               user.score = score;
-	               user.gameMode = gameMode;
 	               user.time = strTime;
 	               arrEasyHighscores.add(user);
 	             
@@ -540,11 +573,10 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	               }
 	               
 	               cardlayoutScoresPanel.show(cardsScoresPanel, "Easy");
-			   } else if (difficulty == 1) {
+			   } else if (difficulty == 2) {
 				   User user = new User();
 	               user.name = name;
 	               user.score = score;
-	               user.gameMode = gameMode;
 	               user.time = strTime;
 	               arrMediumHighscores.add(user);
 	             
@@ -555,11 +587,10 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	               }
 	               
 	               cardlayoutScoresPanel.show(cardsScoresPanel, "Medium");
-			   } else if (difficulty == 2) {
+			   } else if (difficulty == 3) {
 				   User user = new User();
 	               user.name = name;
 	               user.score = score;
-	               user.gameMode = gameMode;
 	               user.time = strTime;
 	               arrHardHighscores.add(user);
 	             
@@ -576,7 +607,6 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 			    
 			   running = false;
 			   paused = false;
-			   gameMode = 0;
 			   running = false;
 			   paused = false;
 			   fps = 60;
@@ -611,24 +641,18 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 		   }
 		   
 		   if(round != 0) {
-			   
 			   for(int i = 0; i <= arrBall.size() - 1; i++) {
 				   arrBall.get(i).CheckIfHitWall(windowWidth, windowHeight);
 				   if(!arrBall.get(i).isDead){
-					   double d = Math.random();
-					   switch(difficulty) {
-					   		case 0: {
-					   		} break;
-					   		case 1: {
-					   			if (d > 0.75){
-					   				arrBall.get(i).Randomize();
-					   			}
-					   		} break;
-					   		case 2: {
-					   			if (d > 0.50){
-					   				arrBall.get(i).Randomize();
-					   			}
-					   		} break;
+					   if(canAITick) {
+						   switch(difficulty) {
+						   		case 1: {} break;
+					   			case 2: arrBall.get(i).MediumAI(); break;
+					   			case 3: arrBall.get(i).HardAI(); break;
+						   }
+						   if(i == arrBall.size() - 1) {
+							   canAITick = false;
+						   }
 					   }
 					   arrBall.get(i).Move();
 				   }
@@ -637,7 +661,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	   }
       
 	   public void paintComponent(Graphics g) {
-		   if(!(round >= gameMode + 1)) {
+		   if(!(round >= totalRounds + 1)) {
 			   g.setColor(Color.WHITE);
 			   g.fillRect(0, 0, windowWidth, windowHeight);
 			   
@@ -646,12 +670,15 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 				   arrBall.get(i).Draw(g);
 			   }
 			   
+			   String diff = "";
+			   switch(difficulty) {
+			   		case 1: diff = "Easy"; break;
+			   		case 2: diff = "Medium"; break;
+			   		case 3: diff = "Hard"; break;
+			   }
+			   
 			   g.setColor(Color.BLACK);
-			   g.drawString("FPS: " + fps, 5, 10);
-			   g.drawString("Score: " + score, 60, 10);
-			   g.drawString("Round: " + round, 140, 10);
-			   g.drawString("Time: " + strTime, 220, 10);
-			   g.drawString("Difficulty: " + gameMode + " rounds", 400, 10);
+			   g.drawString("FPS: " + fps + "        Score: " + score + "        Round: " + round + "        Time: " + strTime + "        Difficulty: " + diff, 5, 10);;
 	         
 			   frameCount++;
 		   }
@@ -715,6 +742,7 @@ public class Game extends JFrame implements ActionListener, MouseListener, Seria
 	           	//Update the frames we got.
 	           	int thisSecond = (int) (lastUpdateTime / 1000000000);
 	           	if (thisSecond > lastSecondTime) {
+	           		canAITick = true;
 	           		intSec++;
 	           		if(intSec == 60) {intSec = 0; intMin++;}
 	           		if(intMin == 60) {intMin = 0; intHr++;}

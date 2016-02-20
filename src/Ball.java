@@ -10,14 +10,13 @@ public class Ball implements Serializable{
 	public int drawY = 0;
 	public int centerX = 0;
 	public int centerY = 0;
-	
 	public int radius = 0;
 	public int speed = 0;
 	public String dir = "";
 	public Object color = null;
 	public int secsDead = 0;
 	public boolean isDead = false;
-	
+	public int tickSinceLastChange = 0;
 	public Random rnd = new Random();
 	
 	public Ball(int _mouseX, int _mouseY) {
@@ -189,32 +188,39 @@ public class Ball implements Serializable{
 			g.fillOval(drawX, drawY, radius * 2, radius * 2);
 		}
 	}
-	public void Randomize() {
-		//Random size
-		switch(rnd.nextInt(4)) {
-			case 0: radius = 25; break;
-			case 1: radius = 30; break;
-			case 2: radius = 35; break;
-			case 3: radius = 40; break;
+	
+	public void MediumAI() {
+		double d = Math.random();
+		
+		if((tickSinceLastChange * .000050) < d) {
+			if(d < 0.7) {
+				//70% to be here
+				switch(rnd.nextInt(8)) {
+					case 0: dir = "up"; break;
+					case 1: dir = "down"; break;	
+					case 2: dir = "left"; break;
+					case 3: dir = "right"; break;
+					case 4: dir = "upleft"; break;
+					case 5: dir = "upright"; break;
+					case 6: dir = "downleft"; break;
+					case 7: dir = "downright"; break;
+				}
+			}
+			else {
+				//30% to be here
+				switch(rnd.nextInt(3)) {
+					case 0: speed = 5; break;
+					case 1: speed = 6; break;
+					case 2: speed = 7; break;
+				}
+			}
+			tickSinceLastChange = 0;
 		}
-				
-		//Random speed
-		switch(rnd.nextInt(3)) {
-			case 0: speed = 5; break;
-			case 1: speed = 6; break;
-			case 2: speed = 7; break;
-		}
-				
-		//Random dir
-		switch(rnd.nextInt(8)) {
-			case 0: dir = "up"; break;
-			case 1: dir = "down"; break;	
-			case 2: dir = "left"; break;
-			case 3: dir = "right"; break;
-			case 4: dir = "upleft"; break;
-			case 5: dir = "upright"; break;
-			case 6: dir = "downleft"; break;
-			case 7: dir = "downright"; break;
-		}
+		
+		tickSinceLastChange++;
+	}
+	
+	public void HardAI() {	
+		
 	}
 }
